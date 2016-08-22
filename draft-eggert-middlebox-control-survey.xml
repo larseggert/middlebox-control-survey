@@ -1,0 +1,964 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<?xml-stylesheet type="text/xsl" href="rfc2629.xslt" ?>
+
+<?rfc toc="yes"?>
+<?rfc strict="yes"?>
+<?rfc tocompact="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="no"?>
+<?rfc tocdepth="1"?>
+<?rfc symrefs="yes"?>
+<?rfc comments="yes" ?>
+<!--<?rfc rfcedstyle="yes"?>-->
+<?rfc sortrefs="yes" ?>
+<rfc category="info" docName="draft-eggert-middlebox-control-survey-01.txt" ipr="noModification3978">
+  <front>
+    <title abbrev="Survey of Middlebox Control Protocols">A Survey of Protocols to Control Network
+      Address Translators and Firewalls</title>
+
+    <author fullname="Lars Eggert" initials="L." surname="Eggert">
+      <organization abbrev="Nokia">Nokia Research Center</organization>
+
+      <address>
+        <postal>
+          <street>P.O. Box 407</street>
+
+          <code>FIN-00045</code>
+
+          <city>Nokia Group</city>
+
+          <country>Finland</country>
+        </postal>
+
+        <phone>+358 50 4824461</phone>
+
+        <email>lars.eggert@nokia.com</email>
+
+        <uri>http://research.nokia.com/people/lars_eggert/</uri>
+      </address>
+    </author>
+
+    <author fullname="Pasi Sarolahti" initials="P." surname="Sarolahti">
+      <organization abbrev="Nokia">Nokia Research Center</organization>
+
+      <address>
+        <postal>
+          <street>P.O. Box 407</street>
+
+          <code>FIN-00045</code>
+
+          <city>Nokia Group</city>
+
+          <country>Finland</country>
+        </postal>
+
+        <phone>+358 50 4876607</phone>
+
+        <email>pasi.sarolahti@nokia.com</email>
+
+        <uri>http://www.iki.fi/pasi.sarolahti/</uri>
+      </address>
+    </author>
+
+    <author fullname="R&eacute;mi Denis-Courmont" initials="R." surname="Denis-Courmont">
+      <organization abbrev="Nokia">Nokia Technology Platforms</organization>
+
+      <address>
+        <postal>
+          <street>P.O. Box 407</street>
+
+          <code>FIN-00045</code>
+
+          <city>Nokia Group</city>
+
+          <country>Finland</country>
+        </postal>
+
+        <phone>+358 50 4876315</phone>
+
+        <email>remi.denis-courmont@nokia.com</email>
+
+        <uri>http://www.remlab.net/</uri>
+      </address>
+    </author>
+
+    <author fullname="Vlad Stirbu" initials="V." surname="Stirbu">
+      <organization abbrev="Nokia">Nokia Technology Platforms</organization>
+
+      <address>
+        <postal>
+          <street>P.O. Box 407</street>
+
+          <city>Nokia Group</city>
+
+          <code>FIN-00045</code>
+
+          <country>Finland</country>
+        </postal>
+
+        <phone>+358 50 3860572</phone>
+
+        <email>vlad.stirbu@nokia.com</email>
+      </address>
+    </author>
+
+
+    <author initials="H." surname="Tschofenig" fullname="Hannes Tschofenig">
+      <organization>Nokia Siemens Networks</organization>
+      <address>
+        <postal>
+          <street>Otto-Hahn-Ring 6</street>
+          <city>Munich</city>
+          <region>Bavaria</region>
+          <code>81739</code>
+          <country>Germany</country>
+        </postal>
+        <email>hannes.tschofenig@nsn.com</email>
+        <uri>http://www.tschofenig.priv.at/</uri>
+      </address>
+    </author>
+
+    <date year="2007"/>
+
+    <area>Transport Area</area>
+
+    <!--<workgroup>Transport Area Working Group</workgroup>-->
+
+    <abstract>
+      <t>This document surveys existing protocols for the control of network address translators and
+        firewalls. It includes standards-level protocols developed by the IETF and other standards
+        organizations, as well as protocols designed by individuals.</t>
+    </abstract>
+  </front>
+
+  <middle>
+
+
+    <!-- ////////////////////////////////////////////////////////////////////////////////// -->
+
+
+    <section anchor="intro" title="Introduction">
+      <t>Network address translators (NATs) and firewalls - frequently referred to as "middleboxes"
+        - are a subject of active discussion in the IETF and related development and standardization
+        communities. These devices are not part of the traditional end-to-end Internet architecture,
+        because they usually operate on transport- and higher-layer information inside the network,
+        which is a layering violation in the original architecture, because operating on that
+        information was the exclusive providence of the end-hosts. </t>
+      <t> However, in practice, NATs have turned out to be necessary to be able to mitigate the IPv4
+        address space limitations of many network domains. Similarly, because the networking
+        software in many systems has turned out to contain security defects of different kinds, use
+        of firewalls is common to protect the systems from attacks coming from the network. Another
+        motivation for firewalls is to protect against the abuse of possibly scarce of expensive
+        bandwidth, for example, unwanted traffic on wireless links.</t>
+
+      <t>A shared disadvantage of NATs and firewalls is that they often encode knowledge about a
+        particular set of higher-layer protocols and applications in order to operate. This practice
+        prevents new types of network protocols or applications from being deployed end-to-end,
+        unless the middleboxes are upgraded or reconfigured as well. For example, a firewall is
+        usually configured with a list of ports for a set of common network applications, preventing
+        introduction of new applications. Furthermore, they commonly only support traditional
+        transport protocols, such as TCP and UDP, preventing the use of other protocols, such as
+        IPsec, IP tunneling, or other transport protocols. In addition, many NATs and firewalls
+        maintain some state for each active transport-layer session that typically needs to be
+        refreshed in constant intervals, and can be initiated only by certain hosts.</t>
+
+      <t>The IETF is currently developing recommendations for the operation of NATs in the BEHAVE
+        working group. These recommendations provide guidelines for how NATs should translate a
+        number of common protocols, including TCP <xref target="I-D.ietf-behave-tcp"/>, UDP <xref
+          target="RFC4787"/>, ICMP <xref target="I-D.ietf-behave-nat-icmp"/> and IP multicast <xref
+          target="I-D.ietf-behave-multicast"/>. Other organizations are developing similar
+        guidelines. One example are Microsoft's requirements for the "Works with Windows Vista" and
+        "Certified for Windows Vista" logo program <xref target="VISTALOGO"/> (see page 121 to page
+        132). </t>
+
+      <t>Even if these efforts result in more unified behavior of middleboxes, they will not
+        necessarily overcome the above-mentioned limitations: different protocols and applications
+        will still need to adapt to the behavior of NATs and firewalls. Commonly, new protocols must
+        be encapsulated into UDP packets in order to pass through these devices. Although the UDP
+        header and protocol logic are minimal and do not consume much network capacity, the use of
+        UDP causes other problems, because it is not connection-oriented. Because there are no
+        messages for connection establishment or connection tear-down in UDP, a stateful NAT or
+        firewall needs to monitor ongoing UDP traffic between a source and destination, and in the
+        absence of such traffic assumes that the session has ended, removing the related session
+        state. In practice, the timers for state clean-up have turned out to be short (on the order
+        of seconds), requiring the end hosts to transmit frequent and resource-consuming keep-alive
+        messages to refresh the session state maintained at middleboxes.</t>
+
+      <t>A more advanced method to overcome the limitations caused by NATs or firewalls would be to
+        allow end-hosts to signal their communication characteristics and profiles explicitly to the
+        NATs and firewalls, or alternatively to allow these devices to signal their configuration
+        information to the end-hosts. With such schemes, the number of state-refreshing keep-alives
+        could be significantly reduced, and NATs and firewalls could be made directly aware of the
+        communication characteristics of the end-hosts. </t>
+
+      <t> A number of existing protocols have been proposed for this purpose, and new proposals are
+        being prepared. This document aims to support such efforts by surveying existing proposals
+        and by discussing the the benefits and shortcomings of these schemes.</t>
+    </section>
+
+    <!--
+
+For each protocol surveyed in the remainder of this document, two subsections exits: (1) protocol overview and (2) protocol analysis. This comment gives some guidelines on how these sections should be written and what should be their content.
+
+
+(1) Protocol Overview
+
+Give a brief overview of the protocol and the operation of its main mechanisms here. Keep this part neutral - no value judgments or comparisons. Don't make this too detailed, either - aim for a length of one page or so. Write it in a way that makes it understandable to non-experts.
+
+
+(2) Protocol Analysis
+
+Discuss the pros and cons of the protocol. Some topics for this discussion are:
+
+	Is the protocol is restricted to certain applications or network
+	environments?
+
+	Does it require additional infrastructure, lower-layer features or
+	cooperation from other entities?
+
+	Does it require modifications to applications?
+
+	How mature is the specification? Has the protocol seen any use or
+	deployment?
+
+(The rest are suggestions from Pasi Eronen.)
+
+	How does the client discover the middlebox? (I think some of the
+	protocols assume that the NAT box is always on your local link...
+	This might be the case for your home NAT, but probably not true in,
+	e.g., enterprise or operator scenarios.)
+
+	What kinds of "pinholes" does the protocol support? (In addition to
+	TCP/UDP-over-IPv4): IPv6, ICMPv4, ICMPv6, ESP, MH, IPv4/6-in-IPv4/6,
+	GRE, SCTP, DCCP, ...)
+
+	What kinds of prior security arrangements does the protocol assume?
+	(e.g. STUN authentication is deliberately compatible with SIP digest
+	auth - but not true for many other things)
+
+	Does it work if routers (not supporting this protocol) somewhere drop
+	packets with IP options?
+
+	Support for multiple nested NATs/firewalls?
+
+	Does the protocol allow running a general-purpose server behind the
+	NAT/firewall? (e.g. TURN has some details deliberately to prevent this)
+
+-->
+
+
+    <!-- ////////////////////////////////////////////////////////////////////////////////// -->
+
+
+    <section anchor="classification" title="Protocol Classification">
+      <t> This section categorizes the proposals into clusters to illustrate the major design
+        choices.</t>
+      <t>
+        <list style="symbols">
+          <t>End-System-Initiated Protocols
+            <list style="symbols">
+              <t>Two Party Approach
+                    <list style="symbols">
+                      <t> UPnP (<xref target="upnp"/>)</t>
+                      <t> NAT-PMP (<xref target="pmp"/>) </t>
+                </list>
+              </t>
+              <t>Multi-Party Approach
+                    <list style="symbols">
+                      <t>STUN controlled NAT (<xref target="stun"/>)</t>
+<!--                      <t>HIP SPINAT (<xref target="spinat"/>) </t>-->
+                      <t>NLS (<xref target="nls"/>)</t>
+                      <t>NSIS NATFW NSLP (<xref target="nsis"/>)</t>
+                    </list>
+              </t>
+            </list>
+          </t>
+          <t>Third-Party-Initiated Approaches
+                <list style="symbols">
+                  <t>Diameter Gq', Rx+, Gx+ (<xref target="diameter"/>) </t>
+                  <t>SIMCO (<xref target="simco"/>)</t>
+                  <t>MIDCOM (<xref target="midcom"/>)</t>
+            </list>
+          </t>
+        </list>
+      </t>
+      <t>A reasonable classification of RSIP (<xref target="rsip"/>), ALD (<xref target="ald"/>), 
+        SOCKS (<xref target="socks"/>) and AFWC (<xref target="afwc"/>) is still pending.</t>
+      <t>The following document were (or are being) developed within the IETF: </t>
+      <t>
+        <list style="symbols">
+          <t>SOCKS <xref target="socks"/></t>
+          <t>NSIS NATFW NSLP, <xref target="nsis"/></t>
+          <t>MIDCOM - Managed Objects for Middlebox Communication, <xref target="midcom"/></t>
+          <t>SIMCO - NEC's Simple Middlebox Configuration Protocol, <xref target="simco"/></t>
+        </list>
+      </t>
+      <t>These protocols were developed outside the IETF:</t>
+      <t>
+        <list style="symbols">
+          <t> UPnP - Internet Gateway Device Standardized Device Control Protocol (<xref
+              target="upnp"/>)</t>
+          <t> Diameter Gq', Rx+, Gx+ (<xref target="diameter"/>)</t>
+        </list>
+      </t>
+      <t>The following protocols are proposals by individuals: </t>
+      <t>
+        <list style="symbols">
+          <t>NAT-PMP - NAT Port Mapping Protocol (<xref target="pmp"/>)</t>
+          <t>STUN - Controlling NAT Bindings using STUN (<xref target="stun"/>)</t>
+          <t>RSIP - Realm-Specific IP (<xref target="rsip"/>)</t>
+          <t>ALD - Application Listener Discovery for IPv6 (<xref target="ald"/>)</t>
+          <t>NLS - Network Layer Signaling Transport Layer (<xref target="nls"/>)</t>
+          <t>AFWC - Authorized IP Firewall Control Application (<xref target="afwc"/>)</t>
+        </list>
+      </t>
+    </section>
+
+
+
+    <!-- ////////////////////////////////////////////////////////////////////////////////// -->
+
+    <section anchor="socks" title="SOCKS">
+      <section title="Protocol Overview">
+        <t>The SOCKS Protocol Version 5 <xref target="RFC1928"/> defines a method for nodes located
+          on an IP network (such as an Intranet with no routing to the Internet) to establish TCP
+          sessions and exchange UDP datagrams with another IP network (usually the global Internet).
+          To that end, a SOCKS server must be located on the boundary of both networks, and SOCKS
+          clients must explicitly request the server to relay their communication sessions.</t>
+
+        <t>When a SOCKS client establishes a TCP session to the remote network, it first connects to
+          the SOCKS server on a well-known TCP port, sending a connection request with optional
+          authentication credentials. The request specifies in which direction the TCP session is to
+          be established, i.e., whether the SOCKS server will act as the active or passive endpoint.
+          The SOCKS server, if it accepts the request, informs the client of the external IP address
+          and TCP port number that it will use.
+          <!-- The _external_ one? Not the internal one that the client needs to connect to? - Lars -->
+          If the SOCKS server acts as the passive endpoint, it sends an additional response once the
+          TCP three-way handshake is completed.
+          <!-- Why and what is included in that response? - Lars --> The SOCKS server then forwards
+          traffic between the internal and external TCP sessions, until either of them is
+          terminated. </t>
+
+        <t>UDP sessions are also initially negotiated via a TCP session to the SOCKS server, in a
+          similar manner. If successful, the client obtains the IP address and UDP port number of a
+          UDP relay server. The relay forwards UDP datagrams between the local and remote networks.
+          When sending a datagram, the client adds an additional, SOCKS-specific header, which
+          carries the IP address or DNS name of the remote peer and the intended destination UDP
+          port number of the datagram. The relay adds the same header when forwarding datagrams from
+          the remote network back to the client. </t>
+      </section>
+
+      <section title="Protocol Analysis">
+        <t>The SOCKS protocol makes few assumptions about the network environment it operates in. In
+          particular, there can be any number NAT/firewall devices between the client and the SOCKS
+          server, and there need not be a router between the local and remote networks. It is
+          assumed that the SOCKS server itself can freely exchange TCP and UDP packets with the
+          remote network. </t>
+        <t>SOCKS supports both IPv4 and IPv6 as well as translation from one to the other. SOCKS
+          only supports UDP and TCP as transport protocols. Conveyance of IP header parameters other
+          than the IP addresses (such as IP options, hop limit, TOS field, etc.) are not defined.
+          SOCKS cannot be used for generic server applications: only one passive TCP session per
+          request is allowed. <!-- Per request - do you mean per client? - Lars -->
+        </t>
+        <t> The protocol is mature and implementations for clients and servers are widely available.
+          SOCKS is supported in many FTP and HTTP clients. Applications must usually be modified to
+          support SOCKS, but it is also possible to implement SOCKS transparently as a shim layer
+          above the BSD socket API. </t>
+        <t>SOCKS requires manual configuration on the client. SOCKS server address and optional
+          credentials must be explicitly provisioned. </t>
+      </section>
+    </section>
+
+    <section anchor="nsis" title="NSIS - NAT/Firewall Signaling Layer Protocol">
+      <section title="Protocol Overview">
+        <t> NSIS uses a two-layer architecture with one lower-layer transport (NTLP) and multiple
+          upper-layer application signaling protocols (NSLPs). This section first discusses the generic properties of the NTLP transport and then the specific characteristics of the NAT/Firewall signaling protocol built upon it.
+          </t>
+          <t> GIST <xref target="I-D.ietf-nsis-ntlp"/> establishes NTLP
+            "routing" state that allows signaling messages to be routed forwards and backwards along a           path. GIST also provides two ways to send signaling messages: </t>
+          <t>
+            <list style="numbers">
+
+              <t>An RSVP-like signaling style with end-to-end addressed messages that contain the source and the destination IP addresses of
+                the data flow. The messages are intercepted along the path by NSIS nodes interested
+                in these messages (by using Router Alert Options). The GIST specification refers to
+                this as the Datagram mode (D-mode). </t>
+
+              <t>Connection mode (or C-mode) is used when NSIS nodes are
+                directly addressed. This mode assumes that the discovery procedure has already
+                finished (or the address of the receiving node is known via other means) and
+                information about the node is already available. </t>
+            </list>
+          </t>
+          <t>An important part of GIST is its discovery mechanism. 
+              
+              As an outcome of the discovery procedure
+            the querying node learns the address of the responding node, its capability and
+            establishes GIST routing state. </t>
+          <!--    <t> The usage of two cookies is somewhat unusual and requires explanation. The responder
+            cookie is used to prevent denial of service attacks in the classical sense as used by
+            other protocols, such as SCTP or IKE. The query cookie has to ensure that an adversary
+            does not redirect the discovery message to another NSIS node. This is guaranteed by
+            providing a cookie by the querying node and by returning the same cookie in the
+            response. This mechanism prevents off-path adversaries from flooding the querying node
+            with GIST-responses. The querying node uses this cookie to match a request with a
+            pending response. Furthermore, transmitting the query cookie from the responding node to
+            the querying node after a security association is established between the two ensures
+            that the responder has actually participated in the discovery exchange (i.e., the
+            discovery procedure is bound to the subsequent exchange). </t>
+        -->
+          <t> Once the next NSIS aware node is known, a messaging association can be established
+            between these two nodes using C-mode. The same procedure is repeated again and again for
+            the C-Mode until the last GIST node is reached. <!-- Note that the NSIS signaling does not
+            necessarily need to terminate at the data flow receiver. The data flow receiver might
+            not be NSIS capable, and some other node along the path (e.g., the access router) might
+            act on his behalf. </t>
+
+          <t>Additional functionality, such as dealing with NSIS-aware NATs is described in GIST and
+            further detailed in <xref target="I-D.pashalidis-nsis-gimps-nattraversal"/>.
+            Functionality for dealing with NSIS-unaware NATs can be found in <xref
+              target="I-D.pashalidis-nsis-gist-legacynats"/>.--> </t>
+          <!-- 
+          <t> The GIST protocol itself is only executed between NSIS peers that implement
+            the signaling application. There are no GIST nodes along the path that do not contain an
+            upper layer signaling application. This is, both an architectural principle and a
+            technical protocol design simplification. As with other protocols, such as Diameter,
+            security mechanisms at the "lower-layer" prevent certain attacks at both layers between
+            two NSIS nodes and allow standard channel security mechanisms to be used. </t>
+          -->
+
+          <t> The NAT/Firewall NSLP description <xref target="I-D.ietf-nsis-nslp-natfw"/>
+            defines an NSIS Signaling Layer Protocol (NSLP) for configuration of network address
+            translators and firewalls on top of GIST. </t>
+            
+          <t>The NATFW NSLP uses GIST as a transport for its signaling messages. Objects about a
+            created NAT binding, as well as lifetime and signaling information (such as protocol
+            headers and error messages) are contained in a NATFW NSLP message itself. All other
+            information about the flow identifier and the session identifier is carried in GIST. For
+            communication security between neighboring NATFW NSLP nodes the usage of Transport Layer
+            Security (TLS) is specified. The usage of an authorization token is possible <xref target="I-D.manner-nsis-nslp-auth"/> <!--, since the
+            functionality is also applicable for the Quality of Service NSLP. --></t><!--
+          <t> The most valuable part of these information elements is the flow identifier (in most
+            cases a 5-tuple but in some cases not completely known to the sender and/or the receiver
+            at the time of transmitting a message). As an example, a data sender might indicate
+            which source port, protocol type and source IP address has to be used, but it cannot
+            know the public IP address, of the NAT binding yet since it is up to the protocol
+            execution to establish and learn this NAT binding. </t>-->
+          <t> It is useful to distinguish between two signaling modes: </t>
+          <t>
+            <list style="empty">
+              <t> The first mode (CREATE) is the traditional way of creating a NAT binding by
+                sending a message from the data sender along the path to the data receiver. <xref
+                  target="create"/> shows a message exchange for this signaling mode.<vspace
+                  blankLines="1"/>
+              </t>
+              <t> The second mode (EXTERNAL) is used when a data receiver is behind a NAT and wants
+                to establish a NAT binding to allow incoming data traffic. <xref target="external"/>
+                shows this mode. It was necessary to introduce this mode, because of an end-to-end
+                reachability problem. Furthermore, it provides a transition scenario where the data
+                receiver behind a NAT or a firewall is able to configure their middlebox locally.
+              </t>
+            </list>
+          </t>
+
+          <t>
+            <figure anchor="create" title="The NATFW NSLP CREATE Mode">
+              <artwork><![CDATA[
+               Private Address              Public  Address
+  +----------+    Space        +----------+    Space       +----------+
+  | Data     |                 |   NAT    |                | Data     |
+  | Sender   |                 |          |                | Receiver |
+  +----------+                 +----------+                +----------+
+     |                              |                            |
+     |       CREATE                 | CREATE                     |
+     |----------------------------->+--------------------------->|
+     |                              |                            |
+     |       RESPONSE               | RESPONSE                   |
+     |<-----------------------------+<---------------------------|
+     |                              |                            |
+     ============================================================>
+                      Direction of data traffic
+   ]]></artwork>
+            </figure>
+          </t>
+          <t>With the CREATE mode shown in <xref target="create"/> the data sender (which happens to
+            be the NSIS initiator in this case) sends a message to request a NAT binding to be
+            created. The message is targeted to the data receiver, which returns a success or
+            failure in the RESPONSE message. The data sender learns about the new NAT binding with
+            information carried in the RESPONSE message. </t>
+
+          <t>
+            <figure anchor="external" title="The NATFW NSLP EXTERNAL Mode">
+              <artwork><![CDATA[
+               Public Internet              Private Address
+  +----------+                 +----------+    Space       +----------+
+  | Data     |                 |   NAT    |                | Data     |
+  | Sender   |                 |          |                | Receiver |
+  +----------+                 +----------+                +----------+
+     |                              |                            |
+     |                              | EXTERNAL                   |
+     |                              |<---------------------------|
+     |                              |                            |
+     |                              | RESPONSE                   |
+     |                              |--------------------------->|
+     |                              |                            |
+     ============================================================>
+                      Direction of data traffic
+   ]]></artwork>
+            </figure>
+          </t>
+          <t> With the EXTERNAL mode shown in <xref target="external"/> the data receiver behind a
+            NAT creates a NAT binding. This allows data traffic from a node on the Internet to be
+            received. Please note that the EXTERNAL message is sent in the opposite direction of the
+            data traffic.</t>
+<!--
+          <t> It should be noted that a variation of the EXTERNAL mode exists, called EXT-PROXY (see
+            Section 3.7.6.1 of <xref target="I-D.ietf-nsis-nslp-natfw"/>), that triggers a
+            CREATE/RESPONSE exchange from the edge NAT/firewall when receiving the EXTERNAL message.
+            This mode was introduced to deal with routing asymmetry problems in combination with
+            firewalls at the data receivers networks when a CREATE/RESPONSE exchange from the Data
+            Sender cannot be assumed. </t>
+-->
+      </section>
+      <section title="Protocol Analysis">
+
+        <t>This section discusses the pros and cons of the protocol.</t>
+
+        <t>
+          <list style="empty">
+            <t> Is the protocol is restricted to certain applications or network environments?</t>
+          </list>
+        </t>
+
+
+        <t>The usage of the protocol is not restricted to a specific environment but to take
+          advantage of its features it is necessary that Network Address Translators and firewalls
+          implement this protocol. </t>
+
+        <t>
+          <list style="empty">
+            <t> Does it require additional infrastructure, lower-layer features or cooperation from
+              other entities? </t>
+          </list>
+        </t>
+        <t>While the protocol supports a zero-configuration scheme so that it works in almost network
+          topologies. The protocol works with multiple nested NATs and firewalls unless the data
+          receiver is behind a complex network topology combined with routing asymmetry (without)
+          state synchronization between the edge firewalls when the data sender does not support the
+          protocol as well. </t>
+        <t>To make use of the security functionality and to perform meaningful authorization
+          capabilities it is, however, necessary to have some form of security infrastructure in
+          place. The protocol provides a very flexible security model with support in different
+          security architectures. </t>
+        <t>Furthermore,for the EXTERNAL signal mode to work it is necessary that the edge firewall
+          or edge NAT towards the public Internet terminates the signaling message exchange since
+          the message might be targeted towards an address that does not exist. </t>
+        <t>
+          <list style="empty">
+            <t> Does it require modifications to applications? </t>
+          </list>
+        </t>
+        <t>The protocol can be used in a proxy mode where no end host support is necessary. In order
+          to benefit best from the supported functionality is is advisable to make applications
+          aware of the capability. </t>
+        <t>
+          <list style="empty">
+            <t> How mature is the specification? Has the protocol seen any use or deployment? </t>
+          </list>
+        </t>
+        <t>The specification is passed Working Group Last Call and several implementations
+          (including open source implementations) exist. However, the protocol is not deployed yet. </t>
+        <t>
+          <list style="empty">
+            <t> How does the client discover the middlebox? </t>
+          </list>
+        </t>
+        <t>The middlebox discovery is accomplished as part of the functionality provided in GIST,
+          namely specifically crafted packets that look like data packets are used. These discovery
+          packets are marked with a router alert option and they are intercepted by firewalls and
+          NATs along the path. </t>
+        <t>
+          <list style="empty">
+            <t> What kinds of "pinholes" does the protocol support? </t>
+          </list>
+        </t>
+        <t>The protocol supports a long range of pinholes. The complete list can be found in Section
+          5.8.1.1 of GIST. </t>
+        <t>
+          <list style="empty">
+            <t> What kinds of prior security arrangements does the protocol assume? </t>
+          </list>
+        </t>
+        <t>When client authentication is required then the credentials of a ciphersuite available
+          for TLS need to be available to the end host. The security architecture builds on a
+          hop-by-hop security architecture. Alternatively, the usage of an authorization token is
+          possible. Authorization tokens can also be used in a non-hop-by-hop fashion. </t>
+        <t>The security architecture is meant to provide strong security protection rather than
+          opportunistic security mechanisms. Further security mechanisms can be added without the
+          need to re-define the protocol by plugging new security functionality into GIST or the
+          NATFW NSLP and my making use of the initial capability exchange. </t>
+        <t>
+          <list style="empty">
+            <t> Does it work if routers (not supporting this protocol) somewhere drop packets with
+              IP options? </t>
+          </list>
+        </t>
+        <t>GIST and the NATFW NSLP has problems if routers drop packets marked with the Router Alert
+          option. It is, however, possible to extend GIST with a different path-coupled signaling
+          procedure. </t>
+        <t>
+          <list style="empty">
+            <t> Does the protocol allow running a general-purpose server behind the NAT/firewall?
+            </t>
+          </list>
+        </t>
+        <t>Yes. </t>
+
+      </section>
+
+    </section>
+
+
+    <section anchor="midcom" title="MIDCOM - Managed Objects for Middlebox Communication">
+      <t>To be completed <xref target="RFC3303"/>.</t>
+      <!--
+        <section title="Protocol Overview"></section>
+
+        <section title="Protocol Analysis"></section>
+-->
+    </section>
+
+    <section anchor="simco" title="SIMCO - NEC's Simple Middlebox Configuration Protocol">
+      <t>To be completed <xref target="RFC4540"/>.</t>
+      <!--
+        <section title="Protocol Overview"></section>
+
+        <section title="Protocol Analysis"></section>
+-->
+    </section>
+
+    <section anchor="diameter" title="Diameter Gq', Rx+, Gx+">
+      <t>To be completed [need reference].</t>
+      <!--
+        <section title="Protocol Overview"></section>
+        
+        <section title="Protocol Analysis"></section>
+      -->
+    </section>
+    <section anchor="upnp"
+      title="UPnP - Internet Gateway Device Standardized Device Control Protocol">
+      <section title="Protocol Overview">
+        <t>The Internet Gateway Device (IGD) is an "edge" interconnection device between a
+          residential Local Area Network (LAN) and a Wide Area Network (WAN), providing connectivity
+          to the Internet for the networked devices in the residential network. The IGD could be
+          physically implemented as a dedicated, standalone device or modeled as a set of Universal
+          Plug-and-Play (UPnP) devices and services on a personal computer.</t>
+
+        <t>As an UPnP-based protocol, the IGD Standardized Device Control Protocol <xref
+            target="UPNP"/> inherits the features that the UPnP Device Architecture provides for
+          support zero-configuration, "invisible" networking, and automatic discovery for a breadth
+          of device categories. Any device can dynamically join a network, obtain an IP address,
+          announce its name, convey its capabilities upon request, and learn about the presence and
+          capabilities of other devices. Devices can disconnect from the network automatically
+          without leaving any unwanted state information behind.</t>
+
+        <t>The IGD Standardized Device Control Protocol contains a set of devices and services that
+          allow clients (in the UPnP context also called "Control Points") to control the initiation
+          and termination of connections, monitor status and events of connections, or manage host
+          configuration services, e.g., DHCP or Dynamic DNS. Among these services, the
+          "WANIPConnection" service provides the functionality that allows the Control Points to
+          manage the network address translation on the IGD device.</t>
+
+        <t>The IGD Standardized Device Control Protocol preserves the ability of non-UPnP devices to
+          initiate and/or share Internet access.</t>
+        <!-- A bit more about how it works may be good. - Lars -->
+      </section>
+
+      <section title="Protocol Analysis">
+        <t>The IGD Standardized Device Control Protocol is intended to be used in unmanaged network
+          environments such as those found typically in residential networks. The residential
+          network can have up to four segments, a limitation inherited from the UPnP Device
+          Architecture, because the TTL value for the link-local multicast discovery messages is
+          four.</t>
+
+        <t>By design, the protocol does permit the presence of several residential gateways in the
+          same network and also permits residential gateways to have multiple connections to the
+          Internet. In practice, a lack of routing mechanisms across multiple, simultaneously active
+          WAN connections on multiple WAN interfaces and related issues caused by multiple,
+          simultaneously active Internet Gateway devices (e.g., default gateway conflict resolution,
+          load balancing or fail over) make scenarios other than that of a single Gateway Device
+          with a single Internet connection difficult to support.</t>
+
+        <t>A residential gateway supporting the IGD Standardized Device Control Protocol is able to
+          operate in two modes. In "routed mode", the gateway shares the routable WAN IP address
+          with the control points on the LAN using NAT. In "bridged" mode, all Ethernet packets from
+          devices on the LAN are bridged to the WAN. In scenarios where the IP address on the WAN
+          interface is not routable, the device can be switched from routed to bridged mode,
+          allowing both the discovery of IGD Standardized Device Control Protocol devices further
+          along the path as well as the use of other NAT hole-punching protocols.</t>
+
+        <t>Applications that intend to create port mappings on a residential gateway supporting the
+          IGD Standardized Device Control Protocol need to have embedded control point
+          functionality, enabling them to create port mappings from TCP or UDP port on the external
+          IPv4 address to the corresponding ports on the internal IPv4 addresses.</t>
+
+        <t>The protocol is implemented in more than 90% of the consumer routers, although the
+          functionality might not be enabled by default.
+          <!-- Do you have a reference for that number? - Lars --></t>
+      </section>
+    </section>
+    <section anchor="pmp" title="NAT-PMP - NAT Port Mapping Protocol">
+      <section title="Protocol Overview">
+        <t>The NAT Port Mapping Protocol <xref target="I-D.cheshire-nat-pmp"/> is a light-weight
+          binary protocol running on top of UDP between client hosts and their IPv4 gateway. Clients
+          can send requests to their first-hop gateway on a well-known UDP port, in order to
+          determine whether NAT-PMP is supported. If that is the case, they will also learn the
+          external IPv4 address of the gateway device.</t>
+
+        <t>If the gateway supports NAT-PMP, a host can assume that it is behind a NAT and start
+          sending request for mapping of external TCP or UDP ports on the external IPv4 address.
+          Mappings can be destroyed explicitly. They also automatically expire after a timeout that
+          can be negotiated per mapping, unless refreshed.</t>
+
+        <t>Through the use of link-local multicast, the gateway can notify hosts if its external IP
+          changes, and/or if it has rebooted. In the latter case, hosts are expected to recreate any
+          mappings. This procedure attempts to protect against loss of state at the gateway.</t>
+
+        <t>NAT-PMP assumes that there is one and only one NAT along the path, which also has to be
+          the first-hop gateway. A gateway must not enable NAT-PMP if it is does not perform
+          address/port translation.</t>
+      </section>
+
+      <section title="Protocol Analysis">
+        <t>NAT-PMP is applicable to small, unmanaged, non-routed networks, connecting multiple hosts
+          to the IPv4 Internet through a single public IPv4 address. It does not require any
+          configuration. Support from the gateway can be auto-detected by clients, and the trust
+          model is solely based on network attachment. There is no support for IPv6, nor is there
+          support for transport protocols other than TCP or UDP. Nested NATs and non-NAT'ing
+          firewalls are not supported.</t>
+
+        <t>NAT-PMP covers the same use cases as <xref target="UPNP"/>, although it is not as widely
+          deployed today. (NAT-PMP is currently mostly implemented by equipment from Apple Computer,
+          Inc.). The specification is recent, but nevertheless mature.</t>
+
+        <t>Applications will normally need to be modified to explicitly request port mappings from
+          the operating system, which would then operate the NAT-PMP state machine and message
+          handling. By design, the protocol allows applications to expose services to the outside,
+          so hole-punching could conceivably be done automatically whenever an application listens
+          to a local TCP port (although this would probably have unwelcome security implications).</t>
+
+        <!-- niceness with non-supporting routers is not very relevant(?) -->
+      </section>
+    </section>
+
+    <section anchor="stun" title="STUN - Controlling NAT Bindings using STUN">
+      <t>To be completed <xref target="I-D.wing-behave-nat-control-stun-usage"/>.</t>
+      <!--
+        <section title="Protocol Overview"></section>
+
+        <section title="Protocol Analysis"></section>
+-->
+    </section>
+<!--
+    <section anchor="spinat" title="SPINAT">
+      <t>To be completed [reference to HIP NAT/Firewall traversal].</t>
+    </section>
+-->
+
+    <section anchor="rsip" title="RSIP - Realm-Specific IP">
+      <t>To be completed <xref target="RFC3103"/>.</t>
+      <!--
+        <section title="Protocol Overview"></section>
+
+        <section title="Protocol Analysis"></section>
+-->
+    </section>
+
+    <section anchor="ald" title="ALD - Application Listener Discovery for IPv6">
+
+      <section title="Protocol Overview">
+        <t>Application Listener Discovery for IPv6 <xref target="I-D.woodyatt-ald"/> is a
+          light-weight, binary protocol to explicitly punch holes through stateful IPv6 firewalls.
+          It uses ICMPv6 for signaling and is auto-configured through an explicit ICMPv6 router
+          advertisement option.</t>
+
+        <t>If the gateway supports ALD, a host can request the opening of holes for any incoming
+          packet toward its own IPv6 address, based on one of multiple possible criteria: <list
+            style="symbols">
+            <t>always</t>
+
+            <t>an IP protocol (excluding IPv6 extension headers)</t>
+
+            <t>for any standard transport protocol, a destination port number</t>
+
+            <t>for IPsec ESP, an SPI value</t>
+          </list></t>
+
+        <t>Holes automatically expire if not refreshed before a negotiated timeout. The gateway can
+          additionally notify hosts through unsolicited advertisements if it has rebooted or lost
+          state.</t>
+      </section>
+
+      <section title="Protocol Analysis">
+        <t>ALD is aimed at unmanaged IPv6 networks, where it might not be acceptable to pass any
+          unsolicited packets coming from the outside toward any hosts in the internal network. ALD
+          needs support from all IPv6 routers within the network, because clients learn the ALD
+          middlebox address through IPv6 Neighbor Discovery auto-configuration. It is expected that
+          ALD will operate on the router itself in most cases. As with IPv6 Neighbor Discovery,
+          there is no authentication. <!--          (XXX: could this piggyback on SEND?) --></t>
+
+        <t>The specification is currently a work-in-progress; there is no known deployment to date.
+          Applications would supposedly need slight modifications, similar as with <xref
+            target="UPNP"/> or <xref target="I-D.cheshire-nat-pmp"/>.</t>
+
+        <t>ALD can handle "pinholes" for any transport protocol, although it is limited to IPv6
+          networks, and is meant to restore the ability to operate general-purpose servers behind
+          stateful firewalls. It currently does not explicitly support nesting, though ALD
+          middleboxes could probably forward pinholes request in a hierarchical manner (from
+          innermost to outermost device).</t>
+      </section>
+    </section>
+
+    <section anchor="nls" title="NLS - Network Layer Signaling Transport Layer">
+      <t>To be completed <xref target="I-D.shore-nls-fw"/>.</t>
+      <!--
+        <section title="Protocol Overview"></section>
+
+        <section title="Protocol Analysis"></section>
+-->
+    </section>
+
+    <section anchor="afwc" title="AFWC - Authorized IP Firewall Control Application">
+      <t>To be completed <xref target="I-D.shore-afwc"/>.</t>
+      <!--
+        <section title="Protocol Overview"></section>
+
+        <section title="Protocol Analysis"></section>
+-->
+    </section>
+
+    <!--
+    <section anchor="summary" title="Summary">
+      <t>This section wraps up the findings in previous section. If there are
+      common problems to several of the above mentioned schemes, it could be
+      noted here. If there are technical gaps that are not satisfied by any of
+      the above schemes, it should be mentioned here.</t>
+    </section>
+-->
+
+
+
+    <!-- ////////////////////////////////////////////////////////////////////////////////// -->
+
+
+    <section anchor="seccons" title="Security Considerations">
+      <t>This document is a survey of existing protocols and does not raise any new security
+        considerations. The security considerations of the surveyed protocols are discussed in their
+        respective specifications, at least for protocols developed within the IETF.</t>
+    </section>
+
+
+    <!-- ////////////////////////////////////////////////////////////////////////////////// -->
+
+
+    <section anchor="ianacons" title="IANA Considerations">
+      <t>This document raises no IANA considerations.</t>
+    </section>
+
+
+    <!-- ////////////////////////////////////////////////////////////////////////////////// -->
+
+
+    <section anchor="ack" title="Acknowledgments">
+      <t>The authors would like to thank Pasi Eronen, Albrecht Schwarz and Dan Wing for their
+        comments on this document.</t>
+      <t>Dave Thaler provided information on the "Works with Windows Vista" and "Certified for
+        Windows Vista" logo program <xref target="VISTALOGO"/>.</t>
+    </section>
+  </middle>
+
+  <back>
+    <!-- REFERENCE TEMPLATE
+        <reference anchor="reference.XXX">
+                <front>
+                        <title>XXX</title>
+                        <author initials="X." surname="XXX" fullname="XXX">
+                                <organization abbrev="XXX">XXX</organization>
+                                <address>
+                                        <postal>
+                                                <street>XXX</street>
+                                                <city>XXX</city>
+                                                <region>XXX</region>
+                                                <code>XXX</code>
+                                                <country>XXX</country>
+                                        </postal>
+                                        <phone>XXX</phone>
+                                        <facsimile>XXX</facsimile>
+                                        <email>XXX</email>
+                                        <uri>XXX</uri>
+                                </address>
+
+                        </author>
+                        <date month="XXX" year="XXX"/>
+                </front>
+                <seriesInfo name="XXX" value="XXX"/>
+                <format type="XXX" target="XXX"/>                       
+        </reference>
+        -->
+
+    <references title="Informative References">
+      <reference anchor="VISTALOGO">
+        <front>
+          <title>Windows Logo Program Device Requirements for Windows Vista Client and Windows
+            Server code named 'Longhorn' (Version 3.09)</title>
+          <author surname="Microsoft Corporation">
+            <organization/>
+          </author>
+          <date month="December" year="2006"/>
+        </front>
+      </reference>
+
+      <?rfc include="reference.RFC.1928" ?>
+
+      <?rfc include="reference.RFC.3103" ?>
+
+      <?rfc include="reference.I-D.ietf-nsis-nslp-natfw" ?>
+      <?rfc include="reference.I-D.ietf-behave-tcp" ?>
+      <?rfc include="reference.RFC.4787" ?>
+      <?rfc include="reference.I-D.ietf-behave-nat-icmp" ?>
+      <?rfc include="reference.I-D.ietf-behave-multicast" ?>
+
+      <?rfc include="reference.RFC.3303" ?>
+
+      <?rfc include="reference.RFC.4540" ?>
+
+       <?rfc include="reference.I-D.shore-afwc" ?>
+       <?rfc include="reference.I-D.shore-nls-fw" ?>
+<!--
+      <?rfc include="reference.I-D.pashalidis-nsis-gimps-nattraversal" ?>
+      <?rfc include="reference.I-D.pashalidis-nsis-gist-legacynats" ?>
+-->      
+      <?rfc include="reference.I-D.manner-nsis-nslp-auth" ?>
+      <?rfc include="reference.I-D.ietf-nsis-ntlp" ?>
+
+      <?rfc include="reference.I-D.cheshire-nat-pmp" ?>
+
+      <?rfc include="reference.I-D.wing-behave-nat-control-stun-usage" ?>
+
+      <?rfc include="reference.I-D.woodyatt-ald" ?>
+
+      <reference anchor="UPNP">
+        <front>
+          <title>Internet Gateway Device (IGD) Standardized Device Control Protocol V 1.0</title>
+
+          <author surname="UPnP Forum">
+            <organization/>
+          </author>
+
+          <date month="November" year="2001"/>
+        </front>
+      </reference>
+
+    </references>
+  </back>
+</rfc>
